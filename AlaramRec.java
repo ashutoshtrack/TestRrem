@@ -1,5 +1,6 @@
 package com.example.ashutosh.testrreminderui;
 
+import android.app.Notification;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -24,6 +25,9 @@ public class AlaramRec extends BroadcastReceiver {
         myNoti.setContentText(q);
         myNoti.setContentTitle(p);
         myNoti.setSmallIcon(R.drawable.ic_stat_namerec);
+        myNoti.setDefaults(Notification.DEFAULT_SOUND);
+        myNoti.setDefaults(Notification.DEFAULT_VIBRATE);
+
         myManager.notify(1,myNoti.build());
     }
 }

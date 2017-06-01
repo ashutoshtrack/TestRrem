@@ -166,7 +166,7 @@ static ThirdActivity tambura;
                         PendingIntent pid = PendingIntent.getBroadcast(ThirdActivity.this, 0, intent, 0);
 
 
-                        
+
                         MainActivity.ma.myAlarmManager.set(AlarmManager.RTC_WAKEUP,
                                 System.currentTimeMillis()+
                                         60 * 1000, pid);
