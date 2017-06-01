@@ -1,8 +1,11 @@
 package com.example.ashutosh.testrreminderui;
 
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -34,7 +37,7 @@ import java.util.Calendar;
  */
 
 public class ThirdActivity extends AppCompatActivity {
-
+static ThirdActivity tambura;
 
     String[] items = new String[] { "On Due date","1 day prior", "2 day prior", "3 day prior","4 day prior","5 day prior","6 day prior","1 week prior" };
     EditText dd,url1;
@@ -43,6 +46,7 @@ public class ThirdActivity extends AppCompatActivity {
     public static final int REQUEST_CAPTURE= 1;
     ImageView img1;
     Button btnAddwa,cancu;
+    //AlarmManager myAlarmManager;
 
     int year_x,month_x,day_x;
     static final int DILOG_ID = 0;
@@ -57,7 +61,7 @@ public class ThirdActivity extends AppCompatActivity {
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
 
        // myDB = new DatabaseHelper(this);
-
+        tambura = this;
 
         final Calendar tarik = Calendar.getInstance();
         year_x =  tarik.get(Calendar.YEAR);
@@ -107,6 +111,13 @@ public class ThirdActivity extends AppCompatActivity {
             }
         });
 
+
+        //AlaramManager
+       // myAlarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
+
+
+
+
         AddData();
         showToast();
 
@@ -135,6 +146,33 @@ public class ThirdActivity extends AppCompatActivity {
                 try {
                     boolean isInserted = MainActivity.ma.myDB.insertData(doctitle.getText().toString(), amount.getText().toString(), ImagetoByte(img1));
                     if (isInserted == true) {
+
+                        String dockyname = doctitle.getText().toString();
+                        String dockyamt = amount.getText().toString();
+
+                        SharedPreferences sh = getSharedPreferences("Mojar", MODE_PRIVATE);
+                        SharedPreferences.Editor myEdit = sh.edit();
+
+                        myEdit.putString("user",dockyname);
+                        myEdit.putString("amount",dockyamt);
+                        myEdit.apply();
+
+
+                        Intent intent = new Intent(ThirdActivity.this, AlaramRec.class);
+
+                        intent.setAction("com.developer.Caller.reciever.Message");
+                        intent.addCategory("android.intent.category.DEFAULT");
+
+                        PendingIntent pid = PendingIntent.getBroadcast(ThirdActivity.this, 0, intent, 0);
+
+
+                        
+                        MainActivity.ma.myAlarmManager.set(AlarmManager.RTC_WAKEUP,
+                                System.currentTimeMillis()+
+                                        60 * 1000, pid);
+
+
+
                         Toast.makeText(ThirdActivity.this, "Data inserted!", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(ThirdActivity.this, "Data not Inserted", Toast.LENGTH_SHORT).show();
@@ -186,12 +224,30 @@ public class ThirdActivity extends AppCompatActivity {
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode==REQUEST_CAPTURE){
-            Bundle extras = data.getExtras();
-            Bitmap photo = (Bitmap)extras.get("data");
-            img1.setImageBitmap(photo);
+        try {
+
+
+
+
+             if(requestCode==REQUEST_CAPTURE){
+                Bundle extras = data.getExtras();
+                Bitmap photo = (Bitmap)extras.get("data");
+                img1.setImageBitmap(photo);
+                Log.i("sat1","completed1");
+            }
+
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Toast.makeText(this, "Try Again!", Toast.LENGTH_SHORT).show();
         }
     }
+
+
+
+
     //--------Camera API ka CODE khatam------------//
 
     //--------Date Picker ka CODE------------//
@@ -243,4 +299,7 @@ public class ThirdActivity extends AppCompatActivity {
         Intent browserIntent  = new Intent(Intent.ACTION_VIEW, Uri.parse("http://"+url1.getText()));
         startActivity(browserIntent);
     }
+
+
+
 }

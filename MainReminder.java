@@ -1,6 +1,8 @@
 package com.example.ashutosh.testrreminderui;
 
+import android.app.PendingIntent;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -11,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -23,6 +26,8 @@ public class MainReminder extends Fragment {
     ListView lw;
     ArrayList<TaskWall> task;
     TaskListAdapter adapter = null;
+
+
     public MainReminder() {
         // Required empty public constructor
     }
@@ -109,6 +114,24 @@ public class MainReminder extends Fragment {
     }
 
     private void game(View v) {
+
+        Intent i1 = new Intent();
+        i1.setAction("com.ashu.Alaramcall.reciever.Message");
+        i1.addCategory("android.intent.category.DEFAULT");
+
+
+        PendingIntent pid = PendingIntent.getBroadcast(getContext(),1,i1,0);
+
+
+
+        MainActivity.ma.myAlarmManager.cancel(pid);
+
+        Toast.makeText(getContext(), "Stopped the Alarm", Toast.LENGTH_SHORT).show();
+
+
+
+
+
         final int postion = lw.getPositionForView(v);
 
         String namer = task.get(postion).getName();

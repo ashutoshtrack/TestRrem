@@ -1,5 +1,6 @@
 package com.example.ashutosh.testrreminderui;
 
+import android.app.AlarmManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.design.widget.TabLayout;
@@ -19,6 +20,7 @@ public class MainActivity extends AppCompatActivity {
     TabLayout myTab;
     ViewPager myPager;
     DatabaseHelper myDB;
+    AlarmManager myAlarmManager;
 
 
 
@@ -56,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
+        myAlarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
         ma = this;
     }
 
