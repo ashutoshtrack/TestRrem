@@ -8,12 +8,16 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,6 +26,7 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CalendarView;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -147,6 +152,11 @@ static ThirdActivity tambura;
                     boolean isInserted = MainActivity.ma.myDB.insertData(doctitle.getText().toString(), amount.getText().toString(), ImagetoByte(img1));
                     if (isInserted == true) {
 
+
+                      //  String encodedImage = Base64.encodeToString(this.ImagetoByte(img1), Base64.DEFAULT);
+
+
+
                         String dockyname = doctitle.getText().toString();
                         String dockyamt = amount.getText().toString();
 
@@ -155,6 +165,9 @@ static ThirdActivity tambura;
 
                         myEdit.putString("user",dockyname);
                         myEdit.putString("amount",dockyamt);
+                       // myEdit.putString("endcoder",encodedImage);
+
+
                         myEdit.apply();
 
 
@@ -169,7 +182,11 @@ static ThirdActivity tambura;
 
                         MainActivity.ma.myAlarmManager.set(AlarmManager.RTC_WAKEUP,
                                 System.currentTimeMillis()+
-                                        60 * 1000, pid);
+                                        20 * 1000, pid);
+
+
+
+
 
 
 
@@ -186,6 +203,7 @@ static ThirdActivity tambura;
             private byte[] ImagetoByte(ImageView img1) {
                 Bitmap bitmap = ((BitmapDrawable)img1.getDrawable()).getBitmap();
                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
                 byte[] byteArray = stream.toByteArray();
                 return byteArray;
