@@ -15,8 +15,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 
 
-    public static final String DATABASE_NAME = "Tasky.db";
-    public static final String TABLE_NAME = "Task_table";
+    public static final String DATABASE_NAME = "Taskyermania.db";
+    public static final String TABLE_NAME = "Task_tablerman";
 
     public static final String COL_1 = "ID";
 
@@ -25,6 +25,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL_3 = "AMOUNT";
 
     public static final String COL_4 = "PHOTOS";
+    public static final String COL_5 = "DATE";
+    public static final String COL_6 = "DUEDATE";
+    public static final String COL_7 = "NOTES";
+    public static final String COL_8 = "URL";
+
+
 
 
     public DatabaseHelper(Context context) {
@@ -33,7 +39,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("create table " + TABLE_NAME +" (ID INTEGER PRIMARY KEY AUTOINCREMENT,NAME TEXT,AMOUNT INTEGER,PHOTOS BLOG)");
+        db.execSQL("create table " + TABLE_NAME +" (ID INTEGER PRIMARY KEY AUTOINCREMENT,NAME TEXT,AMOUNT INTEGER,PHOTOS BLOG,DATE TEXT,DUEDATE TEXT,NOTES TEXT,URL TEXT)");
     }
 
     @Override
@@ -42,7 +48,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
-    public boolean insertData(String name,String amount,byte[] photos) {
+    public boolean insertData(String name,String amount,byte[] photos,String dater,String duedate,String notes,String url ) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues contentValues = new ContentValues();
@@ -50,6 +56,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_2, name);
         contentValues.put(COL_3, amount);
         contentValues.put(COL_4, photos);
+        contentValues.put(COL_5, dater);
+        contentValues.put(COL_6, duedate);
+        contentValues.put(COL_7, notes);
+        contentValues.put(COL_8, url);
 
 
         long result = db.insert(TABLE_NAME, null, contentValues);

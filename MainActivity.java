@@ -41,6 +41,8 @@ public class MainActivity extends AppCompatActivity {
         myPager.setAdapter(new MyOwnAdapterPager(getSupportFragmentManager()));
         myTab.setupWithViewPager(myPager);
 
+        myPager.setCurrentItem(1);
+
         myTab.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
@@ -100,6 +102,8 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public Fragment getItem(int position) {
+
+
             if (position == 0){
                 return new BlankFragment();
             }

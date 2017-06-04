@@ -4,20 +4,18 @@ import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.provider.MediaStore;
-import android.provider.Settings;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -26,7 +24,6 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CalendarView;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -43,10 +40,13 @@ import java.util.Calendar;
 
 public class ThirdActivity extends AppCompatActivity {
 static ThirdActivity tambura;
+    Bundle bund;
 
     String[] items = new String[] { "On Due date","1 day prior", "2 day prior", "3 day prior","4 day prior","5 day prior","6 day prior","1 week prior" };
     EditText dd,url1;
-    EditText doctitle,amount;
+    EditText doctitle,amount,nts;
+    Spinner dynamicSpinner;
+    ArrayAdapter<CharSequence> adapter;
     ImageButton btn,but;
     public static final int REQUEST_CAPTURE= 1;
     ImageView img1;
@@ -73,7 +73,8 @@ static ThirdActivity tambura;
         month_x = tarik.get(Calendar.MONTH);
         day_x = tarik.get(Calendar.DAY_OF_MONTH);
 
-        dd = (EditText) findViewById(R.id.duedatesecE);
+        dd = (EditText) findViewById(R.id.dateset);
+        nts = (EditText) findViewById(R.id.notes);
         doctitle = (EditText) findViewById(R.id.doctitle);
         amount = (EditText) findViewById(R.id.amount);
 
@@ -94,11 +95,18 @@ static ThirdActivity tambura;
 
         //-----Spinner ka Code------------//
 
-        Spinner dynamicSpinner = (Spinner)findViewById(R.id.spinner);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+
+
+        dynamicSpinner = (Spinner)findViewById(R.id.spinner);
+
+       /* ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_spinner_item, items);
 
+        dynamicSpinner.setAdapter(adapter); */
+
+        adapter = ArrayAdapter.createFromResource(this, R.array.due_dates, android.R.layout.simple_spinner_dropdown_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         dynamicSpinner.setAdapter(adapter);
 
 
@@ -106,7 +114,12 @@ static ThirdActivity tambura;
         dynamicSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Log.v("item", (String) parent.getItemAtPosition(position));
+                String pawar = parent.getItemAtPosition(position).toString();
+
+                    bund = new Bundle();
+                bund.putString("key1",pawar);
+
+                Toast.makeText(ThirdActivity.this, "You have selected"+parent.getItemAtPosition(position) , Toast.LENGTH_SHORT).show();
 
             }
 
@@ -149,7 +162,10 @@ static ThirdActivity tambura;
 
             public void onClick(View v) {
                 try {
-                    boolean isInserted = MainActivity.ma.myDB.insertData(doctitle.getText().toString(), amount.getText().toString(), ImagetoByte(img1));
+
+                    String sharad = bund.getString("key1");
+
+                    boolean isInserted = MainActivity.ma.myDB.insertData(doctitle.getText().toString(), amount.getText().toString(), ImagetoByte(img1), dd.getText().toString(), sharad, nts.getText().toString(), url1.getText().toString());
                     if (isInserted == true) {
 
 
@@ -185,7 +201,11 @@ static ThirdActivity tambura;
                                         20 * 1000, pid);
 
 
-
+                            doctitle.setText("");
+                        amount.setText("");
+                            dd.setText("");
+                        nts.setText("");
+                        url1.setText("");
 
 
 
