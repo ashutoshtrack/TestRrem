@@ -42,7 +42,6 @@ public class ThirdActivity extends AppCompatActivity {
 static ThirdActivity tambura;
     Bundle bund;
 
-    String[] items = new String[] { "On Due date","1 day prior", "2 day prior", "3 day prior","4 day prior","5 day prior","6 day prior","1 week prior" };
     EditText dd,url1;
     EditText doctitle,amount,nts;
     Spinner dynamicSpinner;
