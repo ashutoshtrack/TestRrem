@@ -322,7 +322,86 @@ static ThirdActivity tambura;
 
     public void savekar(MenuItem item) {
 
-        Toast.makeText(this, "Saving Reminder", Toast.LENGTH_SHORT).show();
+        try {
+
+            String sharad = bund.getString("key1");
+
+            boolean isInserted = MainActivity.ma.myDB.insertData(doctitle.getText().toString(), amount.getText().toString(), ImagetoByte(img1), dd.getText().toString(), sharad, nts.getText().toString(), url1.getText().toString());
+
+
+
+
+            if (isInserted == true) {
+
+
+                //  String encodedImage = Base64.encodeToString(this.ImagetoByte(img1), Base64.DEFAULT);
+
+
+
+                String dockyname = doctitle.getText().toString();
+                String dockyamt = amount.getText().toString();
+
+                SharedPreferences sh = getSharedPreferences("Mojar", MODE_PRIVATE);
+                SharedPreferences.Editor myEdit = sh.edit();
+
+                myEdit.putString("user",dockyname);
+                myEdit.putString("amount",dockyamt);
+                // myEdit.putString("endcoder",encodedImage);
+
+
+                myEdit.apply();
+
+
+                Intent intent = new Intent(ThirdActivity.this, AlaramRec.class);
+
+                intent.setAction("com.developer.Caller.reciever.Message");
+                intent.addCategory("android.intent.category.DEFAULT");
+
+                PendingIntent pid = PendingIntent.getBroadcast(ThirdActivity.this, 0, intent, 0);
+
+
+
+                MainActivity.ma.myAlarmManager.set(AlarmManager.RTC_WAKEUP,
+                        System.currentTimeMillis()+
+                                20 * 1000, pid);
+
+
+                doctitle.setText("");
+                amount.setText("");
+                dd.setText("");
+                nts.setText("");
+                url1.setText("");
+
+
+
+
+                Toast.makeText(ThirdActivity.this, "Data inserted!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(ThirdActivity.this, "Data not Inserted", Toast.LENGTH_SHORT).show();
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            Toast.makeText(ThirdActivity.this, "insert Full details!", Toast.LENGTH_SHORT).show();
+        }
+
+
+
+
+
+}
+
+    private byte[] ImagetoByte(ImageView img1) {
+
+            Bitmap bitmap = ((BitmapDrawable)img1.getDrawable()).getBitmap();
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            byte[] byteArray = stream.toByteArray();
+            return byteArray;
+
+
+
+
 
     }
     //--------Save Button ka CODE khatam------------//
