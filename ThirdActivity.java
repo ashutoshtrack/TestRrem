@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapRegionDecoder;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -16,6 +18,7 @@ import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -41,7 +44,7 @@ import java.util.Calendar;
 public class ThirdActivity extends AppCompatActivity {
 static ThirdActivity tambura;
     Bundle bund;
-
+    Bitmap imagere;
     EditText dd,url1;
     EditText doctitle,amount,nts;
     Spinner dynamicSpinner;
@@ -168,7 +171,7 @@ static ThirdActivity tambura;
                     if (isInserted == true) {
 
 
-                      //  String encodedImage = Base64.encodeToString(this.ImagetoByte(img1), Base64.DEFAULT);
+                    //  String encodedImage = Base64.encodeToString(this.ImagetoByte(img1), Base64.DEFAULT);
 
 
 
@@ -180,7 +183,7 @@ static ThirdActivity tambura;
 
                         myEdit.putString("user",dockyname);
                         myEdit.putString("amount",dockyamt);
-                       // myEdit.putString("endcoder",encodedImage);
+                        myEdit.putString("endcoder",encodeTobase64(img1));
 
 
                         myEdit.apply();
@@ -197,7 +200,7 @@ static ThirdActivity tambura;
 
                         MainActivity.ma.myAlarmManager.set(AlarmManager.RTC_WAKEUP,
                                 System.currentTimeMillis()+
-                                        20 * 1000, pid);
+                                        10 * 1000, pid);
 
 
                             doctitle.setText("");
@@ -227,6 +230,17 @@ static ThirdActivity tambura;
                 byte[] byteArray = stream.toByteArray();
                 return byteArray;
 
+            }
+
+            public  String encodeTobase64(ImageView img1) {
+                Bitmap imagere = ((BitmapDrawable)img1.getDrawable()).getBitmap();
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                imagere.compress(Bitmap.CompressFormat.PNG, 100, baos);
+                byte[] b = baos.toByteArray();
+                String imageEncoded = Base64.encodeToString(b, Base64.DEFAULT);
+
+                Log.d("Image Log:", imageEncoded);
+                return imageEncoded;
             }
 
         });
@@ -332,7 +346,11 @@ static ThirdActivity tambura;
 
 
             if (isInserted == true) {
+                Bitmap bitmape = ((BitmapDrawable)img1.getDrawable()).getBitmap();
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
+                bitmape.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                byte[] byteArray = stream.toByteArray();
 
                 //  String encodedImage = Base64.encodeToString(this.ImagetoByte(img1), Base64.DEFAULT);
 
@@ -356,6 +374,7 @@ static ThirdActivity tambura;
 
                 intent.setAction("com.developer.Caller.reciever.Message");
                 intent.addCategory("android.intent.category.DEFAULT");
+                intent.putExtra("BitmapImage", bitmape);
 
                 PendingIntent pid = PendingIntent.getBroadcast(ThirdActivity.this, 0, intent, 0);
 
@@ -363,7 +382,7 @@ static ThirdActivity tambura;
 
                 MainActivity.ma.myAlarmManager.set(AlarmManager.RTC_WAKEUP,
                         System.currentTimeMillis()+
-                                20 * 1000, pid);
+                                10 * 1000, pid);
 
 
                 doctitle.setText("");

@@ -64,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
         ma = this;
     }
 
+
     public void doExitApp(MenuItem item) {
         AlertDialog.Builder exiting = new AlertDialog.Builder(this);
         exiting.setTitle("EXIT!!");
