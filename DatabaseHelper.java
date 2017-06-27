@@ -5,7 +5,10 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
+
+import java.io.ByteArrayOutputStream;
 
 /**
  * Created by Ashutosh on 5/31/2017.
@@ -39,7 +42,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("create table " + TABLE_NAME +" (ID INTEGER PRIMARY KEY AUTOINCREMENT,NAME TEXT,AMOUNT INTEGER,PHOTOS BLOG,DATE TEXT,DUEDATE TEXT,NOTES TEXT,URL TEXT)");
+        db.execSQL("create table " + TABLE_NAME +" (ID INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "NAME TEXT,AMOUNT INTEGER,PHOTOS BLOG,DATE TEXT," +
+                "DUEDATE TEXT,NOTES TEXT," +
+                "URL TEXT)");
     }
 
     @Override
@@ -90,6 +96,70 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
+public byte[] getPhoto(int id){
+    byte[] num = new byte[0];
+    SQLiteDatabase db = this.getWritableDatabase();
 
+
+
+    String query = "select * from " +TABLE_NAME+ " where "+COL_1+ " = "+id ;
+    Cursor resi = db.rawQuery(query,null);
+
+    if(resi != null && resi.moveToFirst()){
+        num = resi.getBlob(3);
+        resi.close();
+    }
+
+    // int column = resi.getColumnIndex(COL_4);
+ // byte[] photo=resi.getBlob(column);
+
+    Log.i("getPhotodata","Executed Safely");
+    return num;
+}
+
+
+public int getIdkarantest(){
+int nam = 0;
+    SQLiteDatabase db = this.getWritableDatabase();
+
+
+    String query = "select * from " +TABLE_NAME;
+    Cursor resi = db.rawQuery(query,null);
+    if(resi != null && resi.moveToLast()){
+
+nam = Integer.parseInt(resi.getString(0));
+        resi.close();
+    }
+return   nam;
+}
+    public String getNaamkarantest(int id){
+        String nam = new String();
+        SQLiteDatabase db = this.getWritableDatabase();
+
+
+        String query = "select * from " +TABLE_NAME+ " where "+COL_1+ " = "+id ;
+        Cursor resi = db.rawQuery(query,null);
+        if(resi != null && resi.moveToLast()){
+
+            nam = resi.getString(1);
+            resi.close();
+        }
+        return   nam;
+    }
+
+
+    public String getAmountkarantest(){
+        String nam = new String();
+        SQLiteDatabase db = this.getWritableDatabase();
+
+
+        String query = "select * from " +TABLE_NAME;
+        Cursor resi = db.rawQuery(query,null);
+        if(resi != null && resi.moveToLast()){
+            nam = resi.getString(2);
+            resi.close();
+        }
+        return   nam;
+    }
 
 }

@@ -5,6 +5,7 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -17,6 +18,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
 import android.util.Log;
@@ -43,6 +45,7 @@ import java.util.Calendar;
 
 public class ThirdActivity extends AppCompatActivity {
 static ThirdActivity tambura;
+    AlaramRec alaramRec;
     Bundle bund;
     Bitmap imagere;
     EditText dd,url1;
@@ -59,6 +62,8 @@ static ThirdActivity tambura;
     static final int DILOG_ID = 0;
    // DatabaseHelper myDB;
 
+    private static  final  int PICK_IMAGES = 100;
+    Uri imageuri;
 
 
     @Override
@@ -86,7 +91,7 @@ static ThirdActivity tambura;
         img1 = (ImageView)findViewById(R.id.imgdikha);
 
         url1 = (EditText)findViewById(R.id.urldala);
-
+            alaramRec=new AlaramRec();
         showDialogOnImageButtonClickListener();
 
         if(!hasCamers()){
@@ -185,7 +190,6 @@ static ThirdActivity tambura;
                         myEdit.putString("amount",dockyamt);
                         myEdit.putString("endcoder",encodeTobase64(img1));
 
-
                         myEdit.apply();
 
 
@@ -269,9 +273,33 @@ static ThirdActivity tambura;
     }
 
     public void dabaya(View view) {
-        Toast.makeText(this, "Camera chalu hone wala hai", Toast.LENGTH_SHORT).show();
-        Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivityForResult(i,REQUEST_CAPTURE);
+
+        final CharSequence[] items = {"Camera","Gallery"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(ThirdActivity.this);
+
+        builder.setTitle("Add document image");
+
+        builder.setItems(items, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                if(items[which].equals("Camera")){
+                    Toast.makeText(ThirdActivity.this, "Camera", Toast.LENGTH_SHORT).show();
+                    Intent e = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    startActivityForResult(e,REQUEST_CAPTURE);
+
+                }else  if (items[which].equals("Gallery")){
+                    Toast.makeText(ThirdActivity.this, "Gallery", Toast.LENGTH_SHORT).show();
+                    Intent gallery = new Intent(Intent.ACTION_PICK,MediaStore.Images.Media.INTERNAL_CONTENT_URI);
+                    startActivityForResult(gallery,PICK_IMAGES);
+
+                }
+
+            }
+        });
+        builder.show();
+        builder.setCancelable(false);
+
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -286,9 +314,12 @@ static ThirdActivity tambura;
                 img1.setImageBitmap(photo);
                 Log.i("sat1","completed1");
             }
+            if(requestCode==PICK_IMAGES){
+      imageuri = data.getData();
+                img1.setImageURI(imageuri);
 
 
-        }
+            }}
         catch (Exception e)
         {
             e.printStackTrace();
@@ -375,6 +406,7 @@ static ThirdActivity tambura;
                 intent.setAction("com.developer.Caller.reciever.Message");
                 intent.addCategory("android.intent.category.DEFAULT");
                 intent.putExtra("BitmapImage", bitmape);
+                intent.putExtra("namer",dockyname);
 
                 PendingIntent pid = PendingIntent.getBroadcast(ThirdActivity.this, 0, intent, 0);
 

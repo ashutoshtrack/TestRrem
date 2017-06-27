@@ -5,6 +5,9 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
@@ -27,6 +30,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.SystemClock;
+import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -40,11 +44,13 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -54,9 +60,10 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-/**
- * Created by Ashutosh on 5/31/2017.
- */
+import static android.R.attr.data;
+import static com.example.ashutosh.testrreminderui.ThirdActivity.REQUEST_CAPTURE;
+
+
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 
 public class BlankFragment extends Fragment implements IOnFocusListenable {
@@ -66,9 +73,10 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
         // Required empty public constructor
     }
 
+    ImageView img2r;
 
     private static final String TAG = "Camera2VideoImageActivi";
-
+    public static final int REQUEST_CAPTURE= 1;
     private static final int REQUEST_CAMERA_PERMISSION_RESULT = 0;
     private static final int REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION_RESULT = 1;
     private static final int STATE_PREVIEW = 0;
@@ -102,26 +110,10 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
         @Override
         public void onOpened(CameraDevice camera) {
             mCameraDevice = camera;
-            mMediaRecorder = new MediaRecorder();
-            if(mIsRecording) {
-                try {
-                    createVideoFileName();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                startRecord();
-                mMediaRecorder.start();
-                MainActivity.ma.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mChronometer.setBase(SystemClock.elapsedRealtime());
-                        mChronometer.setVisibility(View.VISIBLE);
-                        mChronometer.start();
-                    }
-                });
-            } else {
-                startPreview();
-            }
+
+
+            startPreview();
+
             // Toast.makeText(getApplicationContext(),
             //         "Camera connection made!", Toast.LENGTH_SHORT).show();
         }
@@ -138,6 +130,7 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
             mCameraDevice = null;
         }
     };
+    private  Image mImage;
     private HandlerThread mBackgroundHandlerThread;
     private Handler mBackgroundHandler;
     private String mCameraId;
@@ -154,7 +147,7 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
             };
     private class ImageSaver implements Runnable {
 
-        private final Image mImage;
+
 
         public ImageSaver(Image image) {
             mImage = image;
@@ -179,6 +172,15 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
                 mediaStoreUpdateIntent.setData(Uri.fromFile(new File(mImageFileName)));
                 MainActivity.ma.sendBroadcast(mediaStoreUpdateIntent);
 
+                Log.i("mein idhar hoonn","YE barobar");
+             //   Intent intentchamp = new Intent(getContext(),ThirdActivity.class);
+
+            //    Intent ey = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            // startActivityForResult(mediaStoreUpdateIntent,REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION_RESULT);
+
+
+
+
                 if(fileOutputStream != null) {
                     try {
                         fileOutputStream.close();
@@ -188,6 +190,28 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
                 }
             }
 
+        }
+    }
+
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        try {
+
+
+
+
+            if(requestCode==REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION_RESULT){
+                Bundle extras = data.getExtras();
+                Bitmap photo = (Bitmap)extras.get("data");
+                img2r.setImageBitmap(photo);
+                Log.i("sat1","completed1");
+            }
+           }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Toast.makeText(getContext(), "Try Again!", Toast.LENGTH_SHORT).show();
         }
     }
     private MediaRecorder mMediaRecorder;
@@ -200,7 +224,8 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
                 private void process(CaptureResult captureResult) {
                     switch (mCaptureState) {
                         case STATE_PREVIEW:
-                            // Do nothing
+                                                   startStillCaptureRequest();
+
                             break;
                         case STATE_WAIT_LOCK:
                             mCaptureState = STATE_PREVIEW;
@@ -208,7 +233,6 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
                             if(afState == CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED ||
                                     afState == CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED) {
                                 Toast.makeText(getContext(), "AF Locked!", Toast.LENGTH_SHORT).show();
-                                startStillCaptureRequest();
                             }
                             break;
                     }
@@ -221,34 +245,7 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
                     process(result);
                 }
             };
-    private CameraCaptureSession mRecordCaptureSession;
-    private CameraCaptureSession.CaptureCallback mRecordCaptureCallback = new
-            CameraCaptureSession.CaptureCallback() {
 
-                private void process(CaptureResult captureResult) {
-                    switch (mCaptureState) {
-                        case STATE_PREVIEW:
-                            // Do nothing
-                            break;
-                        case STATE_WAIT_LOCK:
-                            mCaptureState = STATE_PREVIEW;
-                            Integer afState = captureResult.get(CaptureResult.CONTROL_AF_STATE);
-                            if(afState == CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED ||
-                                    afState == CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED) {
-                                Toast.makeText(getContext(), "AF Locked!", Toast.LENGTH_SHORT).show();
-                                startStillCaptureRequest();
-                            }
-                            break;
-                    }
-                }
-
-                @Override
-                public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
-                    super.onCaptureCompleted(session, request, result);
-
-                    process(result);
-                }
-            };
     private CaptureRequest.Builder mCaptureRequestBuilder;
 
     private ImageButton mRecordImageButton;
@@ -286,7 +283,8 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
 
         View view = inflater.inflate(R.layout.fragment_blank, container, false);
 
-        createVideoFolder();
+        img2r = (ImageView)view.findViewById(R.id.img2);
+
         createImageFolder();
 
         mChronometer = (Chronometer)view. findViewById(R.id.chronometer);
@@ -295,47 +293,9 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
         mStillImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!(mIsTimelapse || mIsRecording)) {
-                    checkWriteStoragePermission();
-                }
+
+                //lockFocus();
                 lockFocus();
-            }
-        });
-        mRecordImageButton = (ImageButton)view. findViewById(R.id.videoOnlineImageButton);
-        mRecordImageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mIsRecording || mIsTimelapse) {
-                    mChronometer.stop();
-                    mChronometer.setVisibility(View.INVISIBLE);
-                    mIsRecording = false;
-                    mIsTimelapse = false;
-                    mRecordImageButton.setImageResource(R.mipmap.btn_video_online);
-
-                    // Starting the preview prior to stopping recording which should hopefully
-                    // resolve issues being seen in Samsung devices.
-                    startPreview();
-                    mMediaRecorder.stop();
-                    mMediaRecorder.reset();
-
-                    Intent mediaStoreUpdateIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-                    mediaStoreUpdateIntent.setData(Uri.fromFile(new File(mVideoFileName)));
-                    MainActivity.ma.sendBroadcast(mediaStoreUpdateIntent);
-
-                } else {
-                    mIsRecording = true;
-                    mRecordImageButton.setImageResource(R.mipmap.btn_video_busy);
-                    checkWriteStoragePermission();
-                }
-            }
-        });
-        mRecordImageButton.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                mIsTimelapse =true;
-                mRecordImageButton.setImageResource(R.mipmap.btn_timelapse);
-                checkWriteStoragePermission();
-                return true;
             }
         });
 
@@ -388,10 +348,7 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
         }
         if(requestCode == REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION_RESULT) {
             if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                if(mIsRecording || mIsTimelapse) {
-                    mIsRecording = true;
-                    mRecordImageButton.setImageResource(R.mipmap.btn_video_busy);
-                }
+
                 Toast.makeText(getContext(),
                         "Permission successfully granted!", Toast.LENGTH_SHORT).show();
             } else {
@@ -460,6 +417,7 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
         CameraManager cameraManager = (CameraManager) MainActivity.ma.getSystemService(Context.CAMERA_SERVICE);
         try {
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                Log.v("cram23","version 23");
                 if(ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.CAMERA) ==
                         PackageManager.PERMISSION_GRANTED) {
                     cameraManager.openCamera(mCameraId, mCameraDeviceStateCallback, mBackgroundHandler);
@@ -480,46 +438,7 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
         }
     }
 
-    private void startRecord() {
 
-        try {
-            if(mIsRecording) {
-                setupMediaRecorder();
-            } else if(mIsTimelapse) {
-                setupTimelapse();
-            }
-            SurfaceTexture surfaceTexture = mTextureView.getSurfaceTexture();
-            surfaceTexture.setDefaultBufferSize(mPreviewSize.getWidth(), mPreviewSize.getHeight());
-            Surface previewSurface = new Surface(surfaceTexture);
-            Surface recordSurface = mMediaRecorder.getSurface();
-            mCaptureRequestBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
-            mCaptureRequestBuilder.addTarget(previewSurface);
-            mCaptureRequestBuilder.addTarget(recordSurface);
-
-            mCameraDevice.createCaptureSession(Arrays.asList(previewSurface, recordSurface, mImageReader.getSurface()),
-                    new CameraCaptureSession.StateCallback() {
-                        @Override
-                        public void onConfigured(CameraCaptureSession session) {
-                            mRecordCaptureSession = session;
-                            try {
-                                mRecordCaptureSession.setRepeatingRequest(
-                                        mCaptureRequestBuilder.build(), null, null
-                                );
-                            } catch (CameraAccessException e) {
-                                e.printStackTrace();
-                            }
-                        }
-
-                        @Override
-                        public void onConfigureFailed(CameraCaptureSession session) {
-                            Log.d(TAG, "onConfigureFailed: startRecord");
-                        }
-                    }, null);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
     private void startPreview() {
         SurfaceTexture surfaceTexture = mTextureView.getSurfaceTexture();
         surfaceTexture.setDefaultBufferSize(mPreviewSize.getWidth(), mPreviewSize.getHeight());
@@ -556,11 +475,9 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
 
     private void startStillCaptureRequest() {
         try {
-            if(mIsRecording) {
-                mCaptureRequestBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_VIDEO_SNAPSHOT);
-            } else {
+
                 mCaptureRequestBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
-            }
+
             mCaptureRequestBuilder.addTarget(mImageReader.getSurface());
             mCaptureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, mTotalRotation);
 
@@ -578,11 +495,9 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
                         }
                     };
 
-            if(mIsRecording) {
-                mRecordCaptureSession.capture(mCaptureRequestBuilder.build(), stillCaptureCallback, null);
-            } else {
+
                 mPreviewCaptureSession.capture(mCaptureRequestBuilder.build(), stillCaptureCallback, null);
-            }
+
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
@@ -593,10 +508,7 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
             mCameraDevice.close();
             mCameraDevice = null;
         }
-        if(mMediaRecorder != null) {
-            mMediaRecorder.release();
-            mMediaRecorder = null;
-        }
+
     }
 
     private void startBackgroundThread() {
@@ -637,25 +549,12 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
         }
     }
 
-    private void createVideoFolder() {
-        File movieFile = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
-        mVideoFolder = new File(movieFile, "camera2VideoImage");
-        if(!mVideoFolder.exists()) {
-            mVideoFolder.mkdirs();
-        }
-    }
 
-    private File createVideoFileName() throws IOException {
-        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String prepend = "VIDEO_" + timestamp + "_";
-        File videoFile = File.createTempFile(prepend, ".mp4", mVideoFolder);
-        mVideoFileName = videoFile.getAbsolutePath();
-        return videoFile;
-    }
+
 
     private void createImageFolder() {
         File imageFile = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-        mImageFolder = new File(imageFile, "camera2VideoImage");
+        mImageFolder = new File(imageFile, "camera2Image");
         if(!mImageFolder.exists()) {
             mImageFolder.mkdirs();
         }
@@ -669,76 +568,18 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
         return imageFile;
     }
 
-    private void checkWriteStoragePermission() {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if(ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED) {
-                try {
-                    createVideoFileName();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                if(mIsTimelapse || mIsRecording) {
-                    startRecord();
-                    mMediaRecorder.start();
-                    mChronometer.setBase(SystemClock.elapsedRealtime());
-                    mChronometer.setVisibility(View.VISIBLE);
-                    mChronometer.start();
-                }
-            } else {
-                if(shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    Toast.makeText(getContext(), "app needs to be able to save videos", Toast.LENGTH_SHORT).show();
-                }
-                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION_RESULT);
-            }
-        } else {
-            try {
-                createVideoFileName();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            if(mIsRecording || mIsTimelapse) {
-                startRecord();
-                mMediaRecorder.start();
-                mChronometer.setBase(SystemClock.elapsedRealtime());
-                mChronometer.setVisibility(View.VISIBLE);
-                mChronometer.start();
-            }
-        }
-    }
 
-    private void setupMediaRecorder() throws IOException {
-        mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
-        mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-        mMediaRecorder.setOutputFile(mVideoFileName);
-        mMediaRecorder.setVideoEncodingBitRate(1000000);
-        mMediaRecorder.setVideoFrameRate(30);
-        mMediaRecorder.setVideoSize(mVideoSize.getWidth(), mVideoSize.getHeight());
-        mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
-        mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-        mMediaRecorder.setOrientationHint(mTotalRotation);
-        mMediaRecorder.prepare();
-    }
 
-    private void setupTimelapse() throws IOException {
-        mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
-        mMediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_TIME_LAPSE_HIGH));
-        mMediaRecorder.setOutputFile(mVideoFileName);
-        mMediaRecorder.setCaptureRate(2);
-        mMediaRecorder.setOrientationHint(mTotalRotation);
-        mMediaRecorder.prepare();
-    }
+
 
     private void lockFocus() {
         mCaptureState = STATE_WAIT_LOCK;
         mCaptureRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.CONTROL_AF_TRIGGER_START);
         try {
-            if(mIsRecording) {
-                mRecordCaptureSession.capture(mCaptureRequestBuilder.build(), mRecordCaptureCallback, mBackgroundHandler);
-            } else {
+
                 mPreviewCaptureSession.capture(mCaptureRequestBuilder.build(), mPreviewCaptureCallback, mBackgroundHandler);
-            }
+                startStillCaptureRequest();
+
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }

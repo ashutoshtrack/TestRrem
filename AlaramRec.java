@@ -13,8 +13,10 @@ import android.os.Bundle;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.NotificationCompat;
 import android.util.Base64;
+import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Date;
 
 import static android.R.attr.data;
 
@@ -23,23 +25,39 @@ import static android.R.attr.data;
  */
 
 public class AlaramRec extends BroadcastReceiver {
+    DatabaseHelper dabaseReciever;
 
 
 
-    public  static  Bitmap decodeBase64(String r) {
-        byte[] decodedByte = Base64.decode(r, Base64.DEFAULT);
-        return BitmapFactory
-                .decodeByteArray(decodedByte, 0, decodedByte.length);
-    }
+
 
 
     @Override
     public void onReceive(Context context, Intent intent) {
 
+        dabaseReciever = new DatabaseHelper(context);
+
+
+
+
+
+        byte [] photo = dabaseReciever.getPhoto(dabaseReciever.getIdkarantest());
+
+        Bitmap bitmapwall = BitmapFactory.decodeByteArray(photo, 0 , photo.length);
+
         SharedPreferences sh1 = context.getSharedPreferences("Mojar", Context.MODE_APPEND);
         String p = sh1.getString("user", "");
         String q = sh1.getString("amount", "");
         String r = sh1.getString("encoder", "");
+      Object object=  intent.getExtras().get("BitmapImage");
+        if(object!=null){
+            Log.v("object ",""+object);
+        }
+        else
+        {
+            Log.v("object","is empty");
+
+        }
 
 
 
@@ -50,7 +68,7 @@ public class AlaramRec extends BroadcastReceiver {
            Bitmap bitmap = BitmapFactory.decodeByteArray(b, 0, b.length);*/
 
 Intent intent1 = new Intent(context,ThirdActivity.class);
-        Bitmap bitmape = (Bitmap) intent1.getParcelableExtra("BitmapImage");
+
        /* if(intent1.hasExtra("byteArray")) {
 
             Bitmap b = BitmapFactory.decodeByteArray(
@@ -62,13 +80,13 @@ Intent intent1 = new Intent(context,ThirdActivity.class);
             NotificationManagerCompat myManager = NotificationManagerCompat.from(context);
             NotificationCompat.Builder myNoti = new NotificationCompat.Builder(context);
             //BitmapFactory.decodeResource(context.getResources(),
-            myNoti.setContentTitle(p);
-            myNoti.setContentText(q);
+            myNoti.setContentTitle(dabaseReciever.getNaamkarantest(dabaseReciever.getIdkarantest()));
+            myNoti.setContentText(dabaseReciever.getAmountkarantest());
         myNoti.setSmallIcon(R.drawable.ic_stat_namerec);
-
+            myNoti.setLargeIcon(bitmapwall);
      //   myNoti.setLargeIcon(BitmapFactory.decodeResource(context.getResources(),R.drawable.balbasor));
      //   myNoti.setLargeIcon(decodeBase64(r));
-        myNoti.setLargeIcon(bitmape);
+      //  myNoti.setLargeIcon(bitmape);
         myNoti.setDefaults(Notification.DEFAULT_ALL);
         myNoti.setAutoCancel(true);
         myNoti.setContentIntent(pid);
@@ -77,7 +95,7 @@ Intent intent1 = new Intent(context,ThirdActivity.class);
           //  myNoti.setDefaults(Notification.DEFAULT_VIBRATE);
 
 
-            myManager.notify(1, myNoti.build());
+            myManager.notify((int) ((new Date().getTime() / 1000L) % Integer.MAX_VALUE), myNoti.build());
       //  }
     }
 }
