@@ -49,7 +49,7 @@ public class TaskListAdapter extends BaseAdapter {
 
     public class ViewHolder{
         ImageView img2;
-        TextView txtName,txtAmount;
+        TextView txtName,txtAmount,dudateText,nteText;
         ImageButton imgeydu;
 
     }
@@ -71,6 +71,9 @@ public class TaskListAdapter extends BaseAdapter {
             holder.txtAmount = (TextView)row.findViewById(R.id.txtAmt);
             holder.img2 = (ImageView)row.findViewById(R.id.imager);
             holder.imgeydu =(ImageButton) row.findViewById(R.id.dustbin);
+            holder.dudateText = (TextView) row.findViewById(R.id.duedateText);
+            holder.nteText = (TextView) row.findViewById(R.id.noteText);
+
 
             row.setTag(holder);
         }else{
@@ -81,6 +84,8 @@ public class TaskListAdapter extends BaseAdapter {
 
         holder.txtName.setText(taskwall.getName());
         holder.txtAmount.setText(taskwall.getAmount());
+        holder.dudateText.setText(taskwall.getDuedate());
+        holder.nteText.setText(taskwall.getNotes());
 
         byte[] taskImage = taskwall.getPhotos();
         Bitmap bitmap = BitmapFactory.decodeByteArray(taskImage, 0 , taskImage.length);

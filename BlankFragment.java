@@ -60,23 +60,25 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import static android.R.attr.data;
-import static com.example.ashutosh.testrreminderui.ThirdActivity.REQUEST_CAPTURE;
+
+
 
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 
-public class BlankFragment extends Fragment implements IOnFocusListenable {
+public class BlankFragment extends Fragment  {
 
+
+    public static int mango ;
+    public static int lockyy =0;
 
     public BlankFragment() {
         // Required empty public constructor
     }
 
-    ImageView img2r;
 
     private static final String TAG = "Camera2VideoImageActivi";
-    public static final int REQUEST_CAPTURE= 1;
+
     private static final int REQUEST_CAMERA_PERMISSION_RESULT = 0;
     private static final int REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION_RESULT = 1;
     private static final int STATE_PREVIEW = 0;
@@ -111,8 +113,7 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
         public void onOpened(CameraDevice camera) {
             mCameraDevice = camera;
 
-
-            startPreview();
+                startPreview();
 
             // Toast.makeText(getApplicationContext(),
             //         "Camera connection made!", Toast.LENGTH_SHORT).show();
@@ -126,11 +127,12 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
 
         @Override
         public void onError(CameraDevice camera, int error) {
-            camera.close();
-            mCameraDevice = null;
+           try {
+               camera.close();
+               mCameraDevice = null;
+           }catch (Exception e){}
         }
     };
-    private  Image mImage;
     private HandlerThread mBackgroundHandlerThread;
     private Handler mBackgroundHandler;
     private String mCameraId;
@@ -147,7 +149,7 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
             };
     private class ImageSaver implements Runnable {
 
-
+        private final Image mImage;
 
         public ImageSaver(Image image) {
             mImage = image;
@@ -168,18 +170,10 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
             } finally {
                 mImage.close();
 
+
                 Intent mediaStoreUpdateIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
                 mediaStoreUpdateIntent.setData(Uri.fromFile(new File(mImageFileName)));
                 MainActivity.ma.sendBroadcast(mediaStoreUpdateIntent);
-
-                Log.i("mein idhar hoonn","YE barobar");
-             //   Intent intentchamp = new Intent(getContext(),ThirdActivity.class);
-
-            //    Intent ey = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            // startActivityForResult(mediaStoreUpdateIntent,REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION_RESULT);
-
-
-
 
                 if(fileOutputStream != null) {
                     try {
@@ -192,28 +186,6 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
 
         }
     }
-
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        try {
-
-
-
-
-            if(requestCode==REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION_RESULT){
-                Bundle extras = data.getExtras();
-                Bitmap photo = (Bitmap)extras.get("data");
-                img2r.setImageBitmap(photo);
-                Log.i("sat1","completed1");
-            }
-           }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            Toast.makeText(getContext(), "Try Again!", Toast.LENGTH_SHORT).show();
-        }
-    }
     private MediaRecorder mMediaRecorder;
     private Chronometer mChronometer;
     private int mTotalRotation;
@@ -224,15 +196,17 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
                 private void process(CaptureResult captureResult) {
                     switch (mCaptureState) {
                         case STATE_PREVIEW:
-                                                   startStillCaptureRequest();
-
+                            // Do nothing
                             break;
                         case STATE_WAIT_LOCK:
                             mCaptureState = STATE_PREVIEW;
                             Integer afState = captureResult.get(CaptureResult.CONTROL_AF_STATE);
                             if(afState == CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED ||
                                     afState == CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED) {
-                                Toast.makeText(getContext(), "AF Locked!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getContext(), "Auto Focus Locked!", Toast.LENGTH_SHORT).show();
+                                lockyy ++;
+                                startStillCaptureRequest();
+
                             }
                             break;
                     }
@@ -246,6 +220,8 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
                 }
             };
 
+
+
     private CaptureRequest.Builder mCaptureRequestBuilder;
 
     private ImageButton mRecordImageButton;
@@ -253,8 +229,7 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
     private boolean mIsRecording = false;
     private boolean mIsTimelapse = false;
 
-    private File mVideoFolder;
-    private String mVideoFileName;
+
     private File mImageFolder;
     private String mImageFileName;
 
@@ -283,39 +258,44 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
 
         View view = inflater.inflate(R.layout.fragment_blank, container, false);
 
-        img2r = (ImageView)view.findViewById(R.id.img2);
 
         createImageFolder();
 
-        mChronometer = (Chronometer)view. findViewById(R.id.chronometer);
+
         mTextureView = (TextureView)view. findViewById(R.id.textureView);
         mStillImageButton = (ImageButton)view. findViewById(R.id.cameraImageButton2);
         mStillImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(!(mIsTimelapse || mIsRecording)) {
+                    checkWriteStoragePermission();
+                }
+                if(mango !=0){
 
-                //lockFocus();
                 lockFocus();
+
+
+                    if(lockyy==0){
+                        startStillCaptureRequest();
+
+                        Toast.makeText(getContext(), "Saved", Toast.LENGTH_SHORT).show();
+
+
+                    }
+                    lockyy = 0;
+
+                }
             }
         });
 
 
-      /*  Button button = (Button)view.findViewById(R.id.button);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
 
-                bulava(v);
-            }
-        });*/
+
         // Inflate the layout for this fragment
         return view;
     }
 
 
-   /* public void bulava(View view){
-        Toast.makeText(view.getContext(), "Hellow manh", Toast.LENGTH_SHORT).show();
-    }*/
 
 
 
@@ -341,10 +321,7 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
                 Toast.makeText(getContext(),
                         "Application will not run without camera services", Toast.LENGTH_SHORT).show();
             }
-            if(grantResults[1] != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(getContext(),
-                        "Application will not have audio on record", Toast.LENGTH_SHORT).show();
-            }
+
         }
         if(requestCode == REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION_RESULT) {
             if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -367,19 +344,7 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
         super.onPause();
     }
 
-    @Override
-    public void onWindowFocusChanged(boolean hasFocas) {
-        mTextureView.onWindowFocusChanged(hasFocas);
-        View decorView = MainActivity.ma.getWindow().getDecorView();
-        if(hasFocas) {
-            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
-        }
-    }
+
 
     private void setupCamera(int width, int height) {
         CameraManager cameraManager = (CameraManager) MainActivity.ma.getSystemService(Context.CAMERA_SERVICE);
@@ -401,7 +366,7 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
                     rotatedHeight = width;
                 }
                 mPreviewSize = chooseOptimalSize(map.getOutputSizes(SurfaceTexture.class), rotatedWidth, rotatedHeight);
-                mVideoSize = chooseOptimalSize(map.getOutputSizes(MediaRecorder.class), rotatedWidth, rotatedHeight);
+
                 mImageSize = chooseOptimalSize(map.getOutputSizes(ImageFormat.JPEG), rotatedWidth, rotatedHeight);
                 mImageReader = ImageReader.newInstance(mImageSize.getWidth(), mImageSize.getHeight(), ImageFormat.JPEG, 1);
                 mImageReader.setOnImageAvailableListener(mOnImageAvailableListener, mBackgroundHandler);
@@ -417,7 +382,6 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
         CameraManager cameraManager = (CameraManager) MainActivity.ma.getSystemService(Context.CAMERA_SERVICE);
         try {
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                Log.v("cram23","version 23");
                 if(ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.CAMERA) ==
                         PackageManager.PERMISSION_GRANTED) {
                     cameraManager.openCamera(mCameraId, mCameraDeviceStateCallback, mBackgroundHandler);
@@ -554,7 +518,7 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
 
     private void createImageFolder() {
         File imageFile = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-        mImageFolder = new File(imageFile, "camera2Image");
+        mImageFolder = new File(imageFile, "Documents");
         if(!mImageFolder.exists()) {
             mImageFolder.mkdirs();
         }
@@ -568,6 +532,26 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
         return imageFile;
     }
 
+    private void checkWriteStoragePermission() {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if(ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
+
+                mango =0;
+                mango ++;
+
+            } else {
+                if(shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    Toast.makeText(getContext(), "app needs to be able to save videos", Toast.LENGTH_SHORT).show();
+                }
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION_RESULT);
+            }
+        } else {
+
+
+        }
+    }
+
 
 
 
@@ -578,12 +562,9 @@ public class BlankFragment extends Fragment implements IOnFocusListenable {
         try {
 
                 mPreviewCaptureSession.capture(mCaptureRequestBuilder.build(), mPreviewCaptureCallback, mBackgroundHandler);
-                startStillCaptureRequest();
 
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
     }
-
-
 }

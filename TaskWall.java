@@ -8,15 +8,17 @@ public class TaskWall {
 
 
     private int id;
-    private String name;
+    private String name,duedate,notes;
     private String amount;
     private byte[] photos;
 
-    public TaskWall(int id, String name, String amount, byte[] photos) {
+    public TaskWall(int id, String name, String amount, byte[] photos, String duedate, String notes) {
         this.id = id;
         this.name = name;
         this.amount = amount;
         this.photos = photos;
+        this.duedate = duedate;
+        this.notes = notes;
     }
 
 
@@ -50,5 +52,22 @@ public class TaskWall {
 
     public void setPhotos(byte[] photos) {
         this.photos = photos;
+    }
+
+
+    public String getDuedate() {
+        return duedate;
+    }
+
+    public void setDuedate(String duedate) {
+        this.duedate = duedate;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 }

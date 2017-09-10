@@ -32,6 +32,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL_6 = "DUEDATE";
     public static final String COL_7 = "NOTES";
     public static final String COL_8 = "URL";
+    public static final String COL_9 = "ALARMID";
+    public static final String COL_10 = "CALENDERDATA";
+    public static final String COL_11 = "FLAGALARM";
 
 
 
@@ -43,9 +46,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("create table " + TABLE_NAME +" (ID INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "NAME TEXT,AMOUNT INTEGER,PHOTOS BLOG,DATE TEXT," +
-                "DUEDATE TEXT,NOTES TEXT," +
-                "URL TEXT)");
+                "NAME TEXT NOT NULL,AMOUNT INTEGER NOT NULL,PHOTOS BLOG,DATE TEXT," +
+                "DUEDATE INTEGER,NOTES TEXT," +
+                "URL TEXT," +
+                "ALARMID INTEGER,CALENDERDATA LONG,FLAGALARM INTEGER)");
     }
 
     @Override
@@ -54,7 +58,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
-    public boolean insertData(String name,String amount,byte[] photos,String dater,String duedate,String notes,String url ) {
+    public boolean insertData(String name,String amount,byte[] photos,String dater,String duedate,String notes,String url,int alarmid,long calenderdata,int flagalarm) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues contentValues = new ContentValues();
@@ -66,6 +70,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_6, duedate);
         contentValues.put(COL_7, notes);
         contentValues.put(COL_8, url);
+        contentValues.put(COL_9, alarmid);
+        contentValues.put(COL_10, calenderdata);
+        contentValues.put(COL_11, flagalarm);
+
 
 
         long result = db.insert(TABLE_NAME, null, contentValues);
@@ -96,22 +104,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
-public byte[] getPhoto(int id){
+public byte[] getPhoto(int alarmidea){
     byte[] num = new byte[0];
     SQLiteDatabase db = this.getWritableDatabase();
 
 
 
-    String query = "select * from " +TABLE_NAME+ " where "+COL_1+ " = "+id ;
+    String query = "select * from " +TABLE_NAME+ " where "+COL_9+ " = "+alarmidea ;
     Cursor resi = db.rawQuery(query,null);
 
-    if(resi != null && resi.moveToFirst()){
+    if(resi != null && resi.moveToLast()){
         num = resi.getBlob(3);
         resi.close();
     }
 
-    // int column = resi.getColumnIndex(COL_4);
- // byte[] photo=resi.getBlob(column);
+
 
     Log.i("getPhotodata","Executed Safely");
     return num;
@@ -148,6 +155,8 @@ return   nam;
     }
 
 
+
+
     public String getAmountkarantest(){
         String nam = new String();
         SQLiteDatabase db = this.getWritableDatabase();
@@ -161,5 +170,91 @@ return   nam;
         }
         return   nam;
     }
+
+    public String NaamKaAlaram(int alarmidea){
+        String nam = new String();
+        SQLiteDatabase db = this.getWritableDatabase();
+
+
+        String query = "select * from " +TABLE_NAME+ " where "+COL_9+ " = "+alarmidea ;
+        Cursor resi = db.rawQuery(query,null);
+        if(resi != null && resi.moveToLast()){
+
+            nam = resi.getString(1);
+            resi.close();
+        }
+        return   nam;
+
+
+    }
+
+    public String AmountKaAlaram(int alarmidea){
+        String nam = new String();
+        SQLiteDatabase db = this.getWritableDatabase();
+
+
+        String query = "select * from " +TABLE_NAME+ " where "+COL_9+ " = "+alarmidea ;
+        Cursor resi = db.rawQuery(query,null);
+        if(resi != null && resi.moveToLast()){
+
+            nam = resi.getString(2);
+            resi.close();
+        }
+        return   nam;
+
+
+    }
+
+
+    public int getAlarmIDtest(String doctitle){
+        int nam =0;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+
+        String query = "select * from " +TABLE_NAME+ " where " +COL_2+ " = '"+doctitle+"'" ;
+        Cursor resi = db.rawQuery(query,null);
+        if(resi != null && resi.moveToLast()){
+            nam = resi.getInt(8);
+            resi.close();
+        }
+
+        return nam;
+    }
+
+
+    public String getCloneAll(String namesetter){
+        String nam = new String();
+        SQLiteDatabase db = this.getWritableDatabase();
+
+
+        String query = "select * from " +TABLE_NAME+ " where "+COL_2+ " = '"+namesetter+"'" ;
+        Cursor resi = db.rawQuery(query,null);
+        if(resi != null && resi.moveToLast()){
+
+            nam = resi.getString(1);
+            resi.close();
+        }
+        return   nam;
+    }
+
+
+    public String URlKaAlaram(int alarmidea){
+        String nam = new String();
+        SQLiteDatabase db = this.getWritableDatabase();
+
+
+        String query = "select * from " +TABLE_NAME+ " where "+COL_9+ " = "+alarmidea ;
+        Cursor resi = db.rawQuery(query,null);
+        if(resi != null && resi.moveToLast()){
+
+            nam = resi.getString(7);
+            resi.close();
+        }
+        return   nam;
+
+
+    }
+
 
 }
